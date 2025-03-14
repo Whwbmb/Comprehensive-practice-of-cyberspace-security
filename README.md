@@ -10,7 +10,7 @@
 - [ ] log4j 漏洞修复完成，并验证了修复效果
 - [X] DMZ 复现环境搭建
 - [X] DMZ 入口靶标已 get flag
-- [ ] DMZ 内网第一层靶标已 get flag
+- [X] DMZ 内网第一层靶标已 get flag
 - [ ] DMZ 内网第二层靶标已 get flag
 - [ ] DMZ 入口靶标的漏洞利用检测
 - [ ] DMZ 内网第一层靶标的漏洞利用检测
