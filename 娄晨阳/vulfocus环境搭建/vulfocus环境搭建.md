@@ -122,7 +122,7 @@ The following were deprecated in Compose V1 and aren't supported in Compose V2:
 
 我的版本为**28.0.1**，所以无法使用`docker-compose`命令，在此我不想要下载docker-compose工具，所以将`start.sh`中`docker-compose up -d`其修改为`docker compose up -d`
 
-![image-20250303162410037](C:\Users\DELL\AppData\Roaming\Typora\typora-user-images\image-20250303162410037.png)
+![问题1解决](picture/问题1解决.png)
 
 ---
 
