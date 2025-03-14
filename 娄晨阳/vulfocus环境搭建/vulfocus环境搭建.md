@@ -93,7 +93,7 @@ EOF
 
 ##### 1.启动Docker容器，使用简化后的启动方式：`bash start.sh`,提示报错：`start.sh: line 47: docker-compose: command not found`
 
-![image-20250303162314778](C:\Users\DELL\AppData\Roaming\Typora\typora-user-images\image-20250303162314778.png)
+![问题1：启动vulfocus镜像报错](picture/问题1：启动vulfocus镜像报错.png)
 
 解决方法：
 
