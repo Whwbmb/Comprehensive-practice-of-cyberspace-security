@@ -558,6 +558,79 @@ ip.src == 192.168.131.6 && tcp.port== 4444
 
 发现攻击者使用 `wget`获取网页内容后进一步构造了 payload ，传递变量远程执行了代码，获取了指定路径的内容
 
+## DMZ 入口靶标的漏洞修复，并验证了修复效果
+
+这里采用 WAF 的方式配置反向代理，让前往服务器的流量都经过代理服务器，进行过滤防护
+
+首先执行下面的命令安装需要使用的 WAF ：
+```bash
+sudo bash -c "$(curl -fsSLk https://waf-ce.chaitin.cn/release/latest/setup.sh)"
+```
+
+![](./img/DMZ缓解安装waf.png)
+
+安装成功后通过提供的链接进入后台
+
+![](./img/DMZ缓解安装waf访问链接.png)
+
+在添加应用模块中添加应用，配置上游服务器
+
+![](./img/DMZ缓解安装waf添加应用.png)
+
+这里配置的上游服务器 ip 是 docker 的网关，而不是 hostonly 的 ip ，是为了在开启防火墙的情况下也能够通过 WAF 访问指定的端口（从 dokcer 内网访问，详情见后面的网络拓扑图）
+
+![](./img/DMZ缓解安装waf添加应用结果.png)
+
+然后在防护配置中配置过滤规则，和添加应用操作类似
+
+![](./img/DMZ缓解安装waf配置防护规则.png)
+
+这里配置了一个简单的规则，通过对 POST 包中的 id 变量 进行分析，拦截包含 "bash" 的流量，实现对入口靶标的保护
+
+![](./img/DMZ缓解安装waf配置防护规则1.png)
+
+为了只保留我们想开放的端口，使用 `iptables` 将其他的端口封死：
+
+```bash
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp --dport 9443 -j ACCEPT
+iptables -A INPUT -j DROP
+
+iptables -L -v -n --line-numbers #查看防火墙配置情况
+```
+
+![](./img/DMZ缓解配置防火墙.png)
+
+最后还需检查 docker 的防火墙配置
+
+```bash
+sudo iptables -t nat -L DOCKER -v -n --line-numbers
+```
+
+删除掉其中 8080 到场景入口端口的映射：
+
+![](./img/DMZ缓解删除docker自动生成的映射.png)
+
+然后回到 web 验证配置的效果，发现正常直接访问已经无法访问入口端口了，只能通过配置好的反向代理通过 8080 端口访问
+
+![](./img/DMZ缓解只有8080能访问.png)
+
+整个网络拓扑结构大体如下：
+
+![](./img/DMZ缓解网络拓扑.png)
+
+下面测试拦截的效果，当禁用防护规则时，通过准备好的脚本进行攻击，发现可以在开启监听的巩固机上连接靶机的 shell ：
+
+![](./img/DMZ缓解未拦截.png)
+
+而当讲防护规则开启时，则不能够实现上述的效果，并且脚本响应表名我们的发送的请求被拦截了：
+
+![](./img/DMZ缓解拦截成功.png)
+
 ## 参考资料：
 
 [网络安全(2023) 综合实验_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1p3411x7da/?vd_source=6c62cb1cac14ec9c6d9e57e7ba2e13c9)
