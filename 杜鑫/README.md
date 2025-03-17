@@ -4,7 +4,7 @@
 
 ## 环境配置：安装docker
 
-通过述一系列命令实现：
+通过下述一系列命令实现：
 
 ```bash
 #将软件源信息写入list文件，使 APT 可以从这个源安装 Docker 相关软件
@@ -590,7 +590,7 @@ sudo bash -c "$(curl -fsSLk https://waf-ce.chaitin.cn/release/latest/setup.sh)"
 
 ![](./img/DMZ缓解安装waf配置防护规则1.png)
 
-为了只保留我们想开放的端口，使用 `iptables` 将其他的端口封死：
+为了只保留我们想开放的端口，使用 `iptables` 临时将其他的端口封死：
 
 ```bash
 iptables -A INPUT -i lo -j ACCEPT
@@ -628,11 +628,11 @@ sudo iptables -t nat -L DOCKER -v -n --line-numbers
 
 ![](./img/DMZ缓解未拦截.png)
 
-而当讲防护规则开启时，则不能够实现上述的效果，并且脚本响应表名我们的发送的请求被拦截了：
+而当将防护规则开启时，则不能够实现上述的效果，并且脚本响应表明我们发送的请求被拦截了：
 
 ![](./img/DMZ缓解拦截成功.png)
 
-但是这里只是实现了对数据流量的拦截过滤，只要防护规则存在缺陷，通过对敏感命令进行编码还是能够进行绕过，没有从根本上修复漏洞，比如下m面进入容器后查看可用的 shell 会发现除了 bash 之外还有其他可用的shell，攻击者只需要替换 bash 为其中任意一个shell同样可以实现反弹 shell 远程命令执行
+但是这里只是实现了对数据流量的拦截过滤，只要防护规则存在缺陷，通过对敏感命令进行编码还是能够进行绕过，没有从根本上修复漏洞，比如下m面进入容器后查看可用的 shell 会发现除了 bash 之外还有其他可用的 shell ，攻击者只需要替换 bash 为其中任意一个shell同样可以实现反弹 shell 远程命令执行
 
 ![](./img/DMZ缓解多个shell可用.png)
 
@@ -640,14 +640,17 @@ sudo iptables -t nat -L DOCKER -v -n --line-numbers
 
 修复该漏洞的方案为更新 struts2 至更高的版本，这里选择直接更新到 2.5.33 版本
 进入 struts2 的靶标容器：
+
 ```bash
 docker exec -it 95d18d8a0f9e bash #id号需要根据 docker ps 确认
 ```
+
 修改 pom.xml ，该文件就在进入的目录下，将其中的 version 标签修改为 2.5.33
 
 ![](./img/DMZ修复升级版本.png)
 
 保存退出后，执行下面的命令更新依赖：
+
 ```bash
 mvn clean install
 ```
