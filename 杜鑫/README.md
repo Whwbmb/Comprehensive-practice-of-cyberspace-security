@@ -563,6 +563,7 @@ ip.src == 192.168.131.6 && tcp.port== 4444
 这里采用 WAF 的方式配置反向代理，让前往服务器的流量都经过代理服务器，进行过滤防护
 
 首先执行下面的命令安装需要使用的 WAF ：
+
 ```bash
 sudo bash -c "$(curl -fsSLk https://waf-ce.chaitin.cn/release/latest/setup.sh)"
 ```
@@ -631,6 +632,36 @@ sudo iptables -t nat -L DOCKER -v -n --line-numbers
 
 ![](./img/DMZ缓解拦截成功.png)
 
+但是这里只是实现了对数据流量的拦截过滤，只要防护规则存在缺陷，通过对敏感命令进行编码还是能够进行绕过，没有从根本上修复漏洞
+
+## DMZ 入口靶标的漏洞修复，并验证了修复效果
+
+修复该漏洞的方案为更新 struts2 至更高的版本，这里选择直接更新到 2.5.33 版本
+进入 struts2 的靶标容器：
+```bash
+docker exec -it 95d18d8a0f9e bash #id号需要根据 docker ps 确认
+```
+修改 pom.xml ，该文件就在进入的目录下，将其中的 version 标签修改为 2.5.33
+
+![](./img/DMZ修复升级版本.png)
+
+保存退出后，执行下面的命令更新依赖：
+```bash
+mvn clean install
+```
+
+![](./img/DMZ修复更新依赖.png)
+
+更新成功将显示下面的结果：
+
+![](./img/DMZ修复更新依赖成功.png)
+
+再次进行之前的测试,关闭防护规则：
+
+![](./img/DMZ修复无法反弹shell.png)
+
+发现即使没有 WAF 防护，仍然无法实现反弹 shell ，证明漏洞已被修复
+
 ## 参考资料：
 
 [网络安全(2023) 综合实验_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1p3411x7da/?vd_source=6c62cb1cac14ec9c6d9e57e7ba2e13c9)
@@ -642,3 +673,5 @@ sudo iptables -t nat -L DOCKER -v -n --line-numbers
 [流量分析-Wireshark -操作手册（不能说最全，只能说更全）_wireshark寻找扫描器-CSDN博客](https://blog.csdn.net/m0_68012373/article/details/129520318)
 
 [数据包取证分析笔记-CSDN博客](https://blog.csdn.net/qq_38626043/article/details/127906609)
+
+[跨越时代的飞跃：Struts 2 升级秘籍——从旧版本无缝迁移到最新版，焕发应用新生！-阿里云开发者社区](https://developer.aliyun.com/article/1602710)
