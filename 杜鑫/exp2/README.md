@@ -20,6 +20,64 @@
 
 ![](./img/网络结构.png)
 
+---
+## 第一层漏洞
+### wordpress 命令执行 （CVE-2016-10033）
 
-## 
+在kali进入msf的终端，开始搜索指定类型的漏洞：
 
+![](./img/进入msf的终端并开始搜索漏洞.png)
+
+搜索到指定给的漏洞后，通过`use`命令进入模块，并查看模块的相关信息：
+
+![](./img/使用搜索到的模组并进行相应的信息查看.png)
+
+通过info的信息修改ip和port
+
+![](./img/wordpress修改ip和端口.png)
+
+![](./img/wordpress修改ip和端口2.png)
+
+修改完必须的参数后发动攻击：
+
+![](./img/wordpress%20getshell.png)
+
+得到flag
+
+![](./img/攻破wordpress.png)
+
+
+需要注意这里有一个问题，在ip为 192.168.131.10 这台虚拟机中，Metasploit的版本为6.4
+
+![](./img/10verison.png)
+
+而另外一个更新过的ip为 192.168.131.6 的虚拟机中Metasploit的版本高达6.4.56
+
+Metasploit 在最新的 dev 分支里，默认的 HTTP Stager Server 在把第一阶段的 prestager 脚本 (“wget…”) 送出去之后就立刻关掉了。
+而在 6.4.9 里，这个内置的文件服务器会一直挂着，等机器再去拉真正的 Meterpreter 二进制的时候还在，于是就能成功。
+
+![](./img/6versin.png)
+
+这导致了对于这个漏洞，在老版本的Metasploit钟可以正常利用其攻击模组实现攻击，连接到shell，而在新的Metasploit中却不可以
+
+
+
+### liferay 命令执行 (CVE-2020-7961)
+
+和之前的wordpress一样处理，搜索相关的漏洞，找到后使用msf自带的攻击模块：
+
+![](./img/liferay漏洞模块.png)
+
+同样设置相关的参数
+
+![](./img/设置相关参数.png)
+
+设置完后进行攻击：
+
+![](./img/liferay启动后攻击成功.png)
+
+连接shell成功后在`/tmp`路径得到flag
+
+![](./img/liferay得到flag.png)
+
+---
