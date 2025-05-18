@@ -1,0 +1,31 @@
+{
+  "name": "Web RCE & File Read CVEs",
+  "version": "4.4",
+  "domain": "enterprise-attack",
+  "description": "Visualize web application RCE and file read CVEs:Drupal (CVE-2019-6339), WordPress (CVE-2016-10033), Webmin (CVE-2022-0824), phpimap (CVE-2018-19518), Nexus (CVE-2018-16621), Liferay (CVE-2020-7961), Druid (CVE-2021-36749).",
+  "techniques": [
+    {
+      "techniqueID": "T1190",
+      "tactic": "initial-access",
+      "color": "#FF0000",
+      "comment": "CVE-2019-6339 (Drupal), CVE-2016-10033 (WordPress), CVE-2022-0824 (Webmin), CVE-2018-19518 (phpimap), CVE-2018-16621 (Nexus), CVE-2020-7961 (Liferay)",
+      "value": 6
+    },
+    {
+      "techniqueID": "T1083",
+      "tactic": "discovery",
+      "color": "#FFA500",
+      "comment": "CVE-2021-36749 (Apache Druid 任意文件读取)",
+      "value": 1
+    }
+  ],
+  "gradient": {
+    "colors": [
+      "#FFFFFF",
+      "#FF0000"
+    ],
+    "minValue": 0,
+    "maxValue": 6
+  },
+  "legendItems": []
+}
