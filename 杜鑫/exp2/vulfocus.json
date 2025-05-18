@@ -1,31 +1,224 @@
 {
-  "name": "Web RCE & File Read CVEs",
-  "version": "4.4",
+  "name": "CVE Exploitation ATT&CK Techniques Mapping",
+  "description": "针对常见 Web 漏洞（Drupal、WordPress、Webmin、phpimap、Nexus3、Druid、Liferay）的多阶段 ATT&CK 技术映射。颜色区分漏洞，score 表示严重度/利用频率。",
   "domain": "enterprise-attack",
-  "description": "Visualize web application RCE and file read CVEs:Drupal (CVE-2019-6339), WordPress (CVE-2016-10033), Webmin (CVE-2022-0824), phpimap (CVE-2018-19518), Nexus (CVE-2018-16621), Liferay (CVE-2020-7961), Druid (CVE-2021-36749).",
+
+  "versions": {
+    "attack": "17",
+    "navigator": "4.6",
+    "layer": "4.5"
+  },
+
+  "filters": {
+    "platforms": [
+      "Linux",
+      "Windows"
+    ]
+  },
+
+  "sorting": 0,
+
+  "layout": {
+    "layout": "side",
+    "showID": false,
+    "showName": true
+  },
+
+  "hideDisabled": false,
+  "selectTechniquesAcrossTactics": true,
+  "selectSubtechniquesWithParent": false,
+  "showTacticRowBackground": false,
+  "tacticRowBackground": "#dddddd",
+
+  "gradient": {
+    "colors": [
+      "#00FF00",
+      "#FF0000"
+    ],
+    "minValue": 1,
+    "maxValue": 10
+  },
+
+  "legendItems": [
+    { "label": "CVE-2019-6339 (Drupal RCE)",           "color": "#ff6666" },
+    { "label": "CVE-2016-10033 (WordPress RCE)",         "color": "#ffcc66" },
+    { "label": "CVE-2022-0824 (Webmin RCE)",             "color": "#ffff66" },
+    { "label": "CVE-2018-19518 (PHP imap_open RCE)",     "color": "#66ff66" },
+    { "label": "CVE-2018-16621 (Nexus3 EL Injection)",   "color": "#66b3ff" },
+    { "label": "CVE-2021-36749 (Druid File Read)",       "color": "#cc66ff" },
+    { "label": "CVE-2020-7961 (Liferay RCE)",            "color": "#ff66cc" }
+  ],
+
   "techniques": [
     {
       "techniqueID": "T1190",
-      "tactic": "initial-access",
-      "color": "#FF0000",
-      "comment": "CVE-2019-6339 (Drupal), CVE-2016-10033 (WordPress), CVE-2022-0824 (Webmin), CVE-2018-19518 (phpimap), CVE-2018-16621 (Nexus), CVE-2020-7961 (Liferay)",
-      "value": 6
+      "comment": "CVE-2019-6339 (Drupal) – Exploit Public-Facing Application：获取初始访问。",
+      "color": "#ff6666",
+      "score": 9
+    },
+    {
+      "techniqueID": "T1059",
+      "comment": "CVE-2019-6339 – Command and Scripting Interpreter：远程代码执行。",
+      "color": "#ff6666",
+      "score": 9
+    },
+    {
+      "techniqueID": "T1505.003",
+      "comment": "CVE-2019-6339 – Web Shell：上传/注入 Web shell 持久化。",
+      "color": "#ff6666",
+      "score": 9
     },
     {
       "techniqueID": "T1083",
-      "tactic": "discovery",
-      "color": "#FFA500",
-      "comment": "CVE-2021-36749 (Apache Druid 任意文件读取)",
-      "value": 1
+      "comment": "CVE-2019-6339 – File and Directory Discovery：枚举服务器文件系统。",
+      "color": "#ff6666",
+      "score": 9
+    },
+    {
+      "techniqueID": "T1190",
+      "comment": "CVE-2016-10033 (WordPress PHPMailer) – Exploit Public-Facing Application。",
+      "color": "#ffcc66",
+      "score": 10
+    },
+    {
+      "techniqueID": "T1059",
+      "comment": "CVE-2016-10033 – Command Execution via PHPMailer RCE。",
+      "color": "#ffcc66",
+      "score": 10
+    },
+    {
+      "techniqueID": "T1505.003",
+      "comment": "CVE-2016-10033 – Web Shell 部署以维持控制。",
+      "color": "#ffcc66",
+      "score": 10
+    },
+    {
+      "techniqueID": "T1552.001",
+      "comment": "CVE-2016-10033 – Unsecured Credentials：读取 wp-config.php 等文件。",
+      "color": "#ffcc66",
+      "score": 10
+    },
+
+    {
+      "techniqueID": "T1078",
+      "comment": "CVE-2022-0824 (Webmin) – Valid Accounts：默认/泄露凭证登录。",
+      "color": "#ffff66",
+      "score": 9
+    },
+    {
+      "techniqueID": "T1068",
+      "comment": "CVE-2022-0824 – Privilege Escalation via Webmin auth bypass。",
+      "color": "#ffff66",
+      "score": 9
+    },
+    {
+      "techniqueID": "T1059",
+      "comment": "CVE-2022-0824 – Command Execution with root privilege。",
+      "color": "#ffff66",
+      "score": 9
+    },
+    {
+      "techniqueID": "T1136.001",
+      "comment": "CVE-2022-0824 – Create or modify local OS accounts。",
+      "color": "#ffff66",
+      "score": 9
+    },
+
+    {
+      "techniqueID": "T1190",
+      "comment": "CVE-2018-19518 (phpimap) – Exploit Public-Facing Application。",
+      "color": "#66ff66",
+      "score": 8
+    },
+    {
+      "techniqueID": "T1059",
+      "comment": "CVE-2018-19518 – Command Execution via imap_open。",
+      "color": "#66ff66",
+      "score": 8
+    },
+    {
+      "techniqueID": "T1505.003",
+      "comment": "CVE-2018-19518 – Web Shell 持久化。",
+      "color": "#66ff66",
+      "score": 8
+    },
+    {
+      "techniqueID": "T1083",
+      "comment": "CVE-2018-19518 – File and Directory Discovery。",
+      "color": "#66ff66",
+      "score": 8
+    },
+
+    {
+      "techniqueID": "T1078",
+      "comment": "CVE-2018-16621 (Nexus3) – Valid Accounts (管理员界面)。",
+      "color": "#66b3ff",
+      "score": 7
+    },
+    {
+      "techniqueID": "T1068",
+      "comment": "CVE-2018-16621 – Privilege Escalation via EL injection。",
+      "color": "#66b3ff",
+      "score": 7
+    },
+    {
+      "techniqueID": "T1059",
+      "comment": "CVE-2018-16621 – Command Execution via EL injection。",
+      "color": "#66b3ff",
+      "score": 7
+    },
+    {
+      "techniqueID": "T1083",
+      "comment": "CVE-2018-16621 – File and Directory Discovery。",
+      "color": "#66b3ff",
+      "score": 7
+    },
+
+    {
+      "techniqueID": "T1190",
+      "comment": "CVE-2021-36749 (Druid) – Exploit Public-Facing Application（任意文件读取）。",
+      "color": "#cc66ff",
+      "score": 5
+    },
+    {
+      "techniqueID": "T1083",
+      "comment": "CVE-2021-36749 – File and Directory Discovery。",
+      "color": "#cc66ff",
+      "score": 5
+    },
+    {
+      "techniqueID": "T1552.001",
+      "comment": "CVE-2021-36749 – Unsecured Credentials via config file read。",
+      "color": "#cc66ff",
+      "score": 5
+    },
+
+    {
+      "techniqueID": "T1190",
+      "comment": "CVE-2020-7961 (Liferay) – Exploit Public-Facing Application（反序列化 RCE）。",
+      "color": "#ff66cc",
+      "score": 10
+    },
+    {
+      "techniqueID": "T1059",
+      "comment": "CVE-2020-7961 – Command Execution after deserialization。",
+      "color": "#ff66cc",
+      "score": 10
+    },
+    {
+      "techniqueID": "T1105",
+      "comment": "CVE-2020-7961 – Ingress Tool Transfer：下载恶意工具。",
+      "color": "#ff66cc",
+      "score": 10
+    },
+    {
+      "techniqueID": "T1552.001",
+      "comment": "CVE-2020-7961 – Unsecured Credentials (读取 portal-ext.properties 等配置)。",
+      "color": "#ff66cc",
+      "score": 10
     }
   ],
-  "gradient": {
-    "colors": [
-      "#FFFFFF",
-      "#FF0000"
-    ],
-    "minValue": 0,
-    "maxValue": 6
-  },
-  "legendItems": []
+
+  "metadata": [],
+  "links": []
 }
