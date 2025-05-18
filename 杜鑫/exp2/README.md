@@ -211,7 +211,7 @@ wget http://192.168.131.6:8000/meter.elf -O /tmp/meter
 
 ![](./img/nexu发现新端口.png)
 
-进入得到的最新的session中，开启断后映射：
+进入得到的最新的session中，开启断端口映射：
 
 ![](./img/dr开启端口映射.png)
 
