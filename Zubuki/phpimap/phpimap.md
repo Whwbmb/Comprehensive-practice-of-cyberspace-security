@@ -1,4 +1,8 @@
 # PHP imap 远程命令执行漏洞（CVE-2018-19518）
+
+## 漏洞背景
+PHP 的 imap_open 函数用于连接IMAP服务器以执行邮件收发操作。在某些Linux发行版（如Debian和Ubuntu）中，imap_open 函数会调用 rsh 来连接远程shell，但这些系统中 rsh 命令实际上是 ssh 命令的符号链接，imap_open 函数在将邮箱名称传递给 rsh 或 ssh 命令之前，没有正确过滤输入参数。攻击者可以通过构造恶意的IMAP服务器名称，注入 -oProxyCommand 参数
+
 ## 实验环境
 - 靶机IP:192.168.157.131
 - 攻击机IP:192.168.93.130
