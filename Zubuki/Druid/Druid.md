@@ -4,8 +4,7 @@
 - 影响版本：Apache Druid <= 0.21.1
 
 ## 复现步骤
-启动环境后，进入https界面后点击connect data
-![](./img/启动环境.png)
+端口转发后，进入https界面后点击connect data
 ![](./img/进入http界面.png)
 
 利用漏洞特性输入下面指令,可以发现目录结构和敏感文件
